@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UB-Paradice - Ultimate Gaming Hub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap');
+:root{
+  --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a2e;--accent:#00f0ff;
+  --accent2:#7b2ff7;--accent3:#ff2d55;--text:#e0e0e0;--text2:#888;
+  --green:#00ff88;--orange:#ff9500;--gradient:linear-gradient(135deg,#00f0ff,#7b2ff7);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+/* ===== SIDEBAR ===== */
+.sidebar{position:fixed;left:0;top:0;width:70px;height:100vh;background:var(--surface);
+  border-right:1px solid #222;display:flex;flex-direction:column;align-items:center;
+  padding:15px 0;z-index:100;transition:width .3s;}
+.sidebar:hover{width:200px;}
+.sidebar .logo{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;
+  color:var(--accent);margin-bottom:30px;white-space:nowrap;overflow:hidden;}
+.sidebar:hover .logo-text{display:inline;}
+.logo-text{display:none;margin-left:8px;font-size:14px;}
+.nav-item{width:100%;padding:12px 20px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;color:var(--text2);transition:all .2s;border-left:3px solid transparent;
+  white-space:nowrap;overflow:hidden;}
+.nav-item:hover,.nav-item.active{color:var(--accent);background:rgba(0,240,255,.05);
+  border-left-color:var(--accent);}
+.nav-item svg{min-width:24px;min-height:24px;}
+.nav-label{opacity:0;transition:opacity .3s;}
+.sidebar:hover .nav-label{opacity:1;}
+
+/* ===== MAIN ===== */
+.main{margin-left:70px;padding:25px 30px;min-height:100vh;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;}
+.header h1{font-family:'Orbitron',sans-serif;font-size:28px;
+  background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header-actions{display:flex;gap:12px;align-items:center;}
+
+/* ===== OFFLINE TOGGLE ===== */
+.offline-toggle{display:flex;align-items:center;gap:8px;background:var(--surface2);
+  padding:8px 16px;border-radius:25px;cursor:pointer;user-select:none;border:1px solid #333;}
+.offline-toggle .dot{width:10px;height:10px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green);transition:all .3s;}
+.offline-toggle.offline .dot{background:var(--accent3);box-shadow:0 0 8px var(--accent3);}
+.offline-toggle span{font-size:13px;font-weight:600;}
+
+/* ===== CROSSHAIR OVERLAY ===== */
+#crosshair-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:9999;pointer-events:none;display:none;}
+
+/* ===== SECTIONS ===== */
+.section{display:none;}
+.section.active{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+.section-title{font-family:'Orbitron',sans-serif;font-size:20px;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;}
+.section-title::before{content:'';width:4px;height:24px;background:var(--gradient);border-radius:2px;}
+
+/* ===== CARDS GRID ===== */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;margin-bottom:35px;}
+.card{background:var(--surface);border:1px solid #222;border-radius:16px;padding:22px;
+  cursor:pointer;transition:all .3s;position:relative;overflow:hidden;}
+.card:hover{transform:translateY(-4px);border-color:var(--accent);
+  box-shadow:0 8px 30px rgba(0,240,255,.1);}
+.card-icon{font-size:40px;margin-bottom:12px;}
+.card h3{font-size:15px;font-weight:700;margin-bottom:6px;}
+.card p{font-size:12px;color:var(--text2);line-height:1.5;}
+.card .badge{position:absolute;top:12px;right:12px;font-size:10px;padding:3px 8px;
+  border-radius:10px;font-weight:700;text-transform:uppercase;}
+.badge-free{background:rgba(0,255,136,.15);color:var(--green);}
+.badge-mod{background:rgba(123,47,247,.15);color:var(--accent2);}
+.badge-client{background:rgba(255,149,0,.15);color:var(--orange);}
+
+/* ===== BOOKMARK MANAGER ===== */
+.bookmark-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.bookmark-chip{background:var(--surface2);border:1px solid #333;border-radius:20px;
+  padding:6px 14px;font-size:12px;cursor:pointer;transition:all .2s;display:flex;
+  align-items:center;gap:6px;}
+.bookmark-chip:hover{border-color:var(--accent);color:var(--accent);}
+.bookmark-chip .del{color:var(--accent3);font-weight:700;margin-left:4px;}
+.add-bookmark{display:flex;gap:8px;margin-bottom:20px;}
+.add-bookmark input{background:var(--surface);border:1px solid #333;border-radius:10px;
+  padding:10px 14px;color:var(--text);font-size:13px;flex:1;outline:none;}
+.add-bookmark input:focus{border-color:var(--accent);}
+.btn{padding:10px 20px;border-radius:10px;border:none;font-weight:700;cursor:pointer;
+  font-size:13px;transition:all .2s;}
+.btn-primary{background:var(--gradient);color:#000;}
+.btn-primary:hover{opacity:.85;transform:scale(1.02);}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid #333;}
+.btn-danger{background:rgba(255,45,85,.15);color:var(--accent3);border:1px solid rgba(255,45,85,.3);}
+
+/* ===== CROSSHAIR SELECTOR ===== */
+.crosshair-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:14px;}
+.crosshair-option{background:var(--surface);border:1px solid #333;border-radius:12px;
+  padding:20px;text-align:center;cursor:pointer;transition:all .3s;}
+.crosshair-option:hover,.crosshair-option.selected{border-color:var(--accent);
+  box-shadow:0 0 15px rgba(0,240,255,.1);}
+.crosshair-preview{width:60px;height:60px;margin:0 auto 10px;position:relative;}
+.crosshair-option label{font-size:12px;color:var(--text2);display:block;margin-top:6px;}
+
+/* ===== SPLIT SCREEN ===== */
+.split-container{display:grid;grid-template-columns:1fr 1fr;gap:4px;height:70vh;
+  border-radius:12px;overflow:hidden;border:1px solid #333;}
+.split-pane{background:var(--surface);display:flex;flex-direction:column;}
+.split-pane .pane-header{padding:10px 14px;background:var(--surface2);display:flex;
+  justify-content:space-between;align-items:center;font-size:13px;font-weight:600;}
+.split-pane iframe,.split-pane .pane-content{flex:1;border:none;width:100%;background:#000;}
+.pane-content{display:flex;align-items:center;justify-content:center;color:var(--text2);
+  font-size:14px;flex-direction:column;gap:10px;}
+.url-input{width:90%;background:var(--bg);border:1px solid #333;border-radius:8px;
+  padding:8px 12px;color:var(--text);font-size:12px;outline:none;margin:8px;}
+.url-input:focus{border-color:var(--accent);}
+
+/* ===== COLOR PICKER ===== */
+.color-row{display:flex;gap:10px;align-items:center;margin:10px 0;}
+.color-row label{font-size:13px;min-width:80px;}
+.color-row input[type=color]{width:40px;height:30px;border:none;background:none;cursor:pointer;}
+.color-row input[type=range]{flex:1;accent-color:var(--accent);}
+
+/* ===== MODAL ===== */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);
+  z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--surface);border:1px solid #333;border-radius:16px;padding:30px;
+  max-width:500px;width:90%;max-height:80vh;overflow-y:auto;}
+.modal h2{font-family:'Orbitron',sans-serif;font-size:18px;margin-bottom:15px;
+  color:var(--accent);}
+.modal p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px;}
+
+/* ===== STATUS BAR ===== */
+.status-bar{position:fixed;bottom:0;left:70px;right:0;height:32px;background:var(--surface);
+  border-top:1px solid #222;display:flex;align-items:center;padding:0 20px;gap:20px;
+  font-size:11px;color:var(--text2);z-index:50;}
+.status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px;}
+.status-online{background:var(--green);box-shadow:0 0 6px var(--green);}
+.status-offline{background:var(--accent3);box-shadow:0 0 6px var(--accent3);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="logo">🎮<span class="logo-text">UB-Paradice</span></div>
+  <div class="nav-item active" onclick="switchSection('launchers')">
+    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M21 6H3a1 1 0 00-1 1v10a1 1 0 001 1h18a1 1 0 001-1V7a1 1 0 00-1-1zm-1 10H4V8h16v8z"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>
+    <span class="nav-label">Launchers</span>
+  </div>
+  <div class="nav-item" onclick="switchSection('minecraft')">
+    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="13" width="4" height="4"/></svg>
+    <span class="nav-label">Minecraft</span>
+  </div>
+  <div class="nav-item" onclick="switchSection('bookmarks')">
+    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 00-2 2v16l7-3 7 3V5a2 2 0 00-2-2z"/></svg>
+    <span class="nav-label">Bookmarks</span>
+  </div>
+  <div class="nav-item" onclick="switchSection('crosshair')">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="21"/><line x1="3" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="21" y2="12"/></svg>
+    <span class="nav-label">Crosshair</span>
+  </div>
+  <div class="nav-item" onclick="switchSection('splitscreen')">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+    <span class="nav-label">Split Screen</span>
+  </div>
+  <div class="nav-item" onclick="switchSection('offline')">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0119 12.55"/><path d="M5 12.55a10.94 10.94 0 015.17-2.39"/><path d="M10.71 5.05A16 16 0 0122.56 9"/><path d="M1.42 9a15.91 15.91 0 014.7-2.88"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+    <span class="nav-label">Offline Mode</span>
+  </div>
+</nav>
+
+<!-- CROSSHAIR OVERLAY -->
+<canvas id="crosshair-overlay" width="60" height="60"></canvas>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+  <div class="header">
+    <h1>⚡ UB-Paradice</h1>
+    <div class="header-actions">
+      <div class="offline-toggle" id="offlineToggle" onclick="toggleOffline()">
+        <div class="dot"></div>
+        <span id="offlineLabel">Online</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LAUNCHERS ==================== -->
+  <div class="section active" id="sec-launchers">
+    <div class="section-title">Game Launchers</div>
+    <div class="cards">
+      <div class="card" onclick="window.open('https://www.xbox.com/en-US/play','_blank')">
+        <div class="card-icon">🟢</div>
+        <span class="badge badge-free">Free</span>
+        <h3>Xbox Cloud Gaming</h3>
+        <p>Play 100s of Xbox games directly in your browser with Game Pass. No downloads needed.</p>
+      </div>
+      <div class="card" onclick="window.open('https://store.epicgames.com/','_blank')">
+        <div class="card-icon">🟣</div>
+        <span class="badge badge-free">Free</span>
+        <h3>Epic Games Launcher</h3>
+        <p>Access Epic Games Store, free weekly games, Fortnite, and Unreal Engine.</p>
+      </div>
+      <div class="card" onclick="window.open('https://www.minecraft.net/en-us/download','_blank')">
+        <div class="card-icon">☕</div>
+        <h3>Minecraft Java Launcher</h3>
+        <p>Official Minecraft Java Edition launcher. Play with mods, servers & custom skins.</p>
+      </div>
+      <div class="card" onclick="window.open('https://store.steampowered.com/','_blank')">
+        <div class="card-icon">🔵</div>
+        <span class="badge badge-free">Free</span>
+        <h3>Steam (Web)</h3>
+        <p>Browse the Steam store, manage your library & discover new games.</p>
+      </div>
+      <div class="card" onclick="window.open('https://www.ea.com/ea-app','_blank')">
+        <div class="card-icon">🔴</div>
+        <h3>EA App</h3>
+        <p>Access EA Play, FIFA, Battlefield, Apex Legends and more.</p>
+      </div>
+      <div class="card" onclick="window.open('https://itch.io/','_blank')">
+        <div class="card-icon">🟠</div>
+        <span class="badge badge-free">Free</span>
+        <h3>Itch.io</h3>
+        <p>Indie game marketplace with thousands of free browser and downloadable games.</p>
+      </div>
+    </div>
+
+    <div class="section-title">Browser Games (Play Now)</div>
+    <div class="cards">
+      <div class="card" onclick="window.open('https://krunker.io/','_blank')">
+        <div class="card-icon">🔫</div>
+        <h3>Krunker.io</h3>
+        <p>Fast-paced browser FPS shooter. No download needed.</p>
+      </div>
+      <div class="card" onclick="window.open('https://shellshock.io/','_blank')">
+        <div class="card-icon">🥚</div>
+        <h3>Shell Shockers</h3>
+        <p>Egg-themed multiplayer FPS game right in your browser.</p>
+      </div>
+      <div class="card" onclick="window.open('https://1v1.lol/','_blank')">
+        <div class="card-icon">🏗️</div>
+        <h3>1v1.LOL</h3>
+        <p>Build & shoot battle royale style. Great building mechanics.</p>
+      </div>
+      <div class="card" onclick="window.open('https://www.crazygames.com/','_blank')">
+        <div class="card-icon">🎲</div>
+        <span class="badge badge-free">Free</span>
+        <h3>CrazyGames</h3>
+        <p>Huge library of free browser games. All genres.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MINECRAFT ==================== -->
+  <div class="section" id="sec-minecraft">
+    <div class="section-title">Minecraft Java Edition</div>
+    <p style="color:var(--text2);margin-bottom:20px;font-size:14px;">Fabric 1.21.1 — Mods, Clients & Resources</p>
+
+    <div style="margin-bottom:30px;">
+      <h3 style="font-size:16px;margin-bottom:14px;color:var(--accent);">📦 Mod Loaders & Clients</h3>
+      <div class="cards">
+        <div class="card" onclick="window.open('https://fabricmc.net/','_blank')">
+          <div class="card-icon">🧵</div>
+          <span class="badge badge-mod">Loader</span>
+          <h3>Fabric Loader</h3>
+          <p>Lightweight mod loader for Minecraft 1.21.1. Fast updates, great performance.</p>
+        </div>
+        <div class="card" onclick="window.open('https://www.lunarclient.com/','_blank')">
+          <div class="card-icon">🌙</div>
+          <span class="badge badge-client">Client</span>
+          <h3>Lunar Client</h3>
+          <p>All-in-one modpack with built-in mods, FPS boost, cosmetics & anti-cheat.</p>
+        </div>
+        <div class="card" onclick="window.open('https://feathermc.com/','_blank')">
+          <div class="card-icon">🪶</div>
+          <span class="badge badge-client">Client</span>
+          <h3>Feather Client</h3>
+          <p>Performance client with mods, FPS boost, and clean UI. Supports Fabric.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:30px;">
+      <h3 style="font-size:16px;margin-bottom:14px;color:var(--accent2);">🔧 Mod Sources</h3>
+      <div class="cards">
+        <div class="card" onclick="window.open('https://modrinth.com/mods?g=categories:%27fabric%27&v=1.21.1','_blank')">
+          <div class="card-icon">💚</div>
+          <span class="badge badge-free">Open Source</span>
+          <h3>Modrinth</h3>
+          <p>Modern mod platform. Filter by Fabric 1.21.1. Fast downloads, no ads.</p>
+        </div>
+        <div class="card" onclick="window.open('https://www.curseforge.com/minecraft/search?class=mc-mods&gameVersion=1.21.1&modLoaderType=4','_blank')">
+          <div class="card-icon">🔥</div>
+          <h3>CurseForge</h3>
+          <p>Largest Minecraft mod database. Filter by Fabric & version 1.21.1.</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="font-size:16px;margin-bottom:14px;color:var(--accent3);">⭐ Recommended Fabric 1.21.1 Mods</h3>
+      <div class="cards">
+        <div class="card" onclick="window.open('https://modrinth.com/mod/sodium','_blank')">
+          <div class="card-icon">⚡</div>
+          <h3>Sodium</h3>
+          <p>Massive FPS boost. Essential performance mod for Fabric.</p>
+        </div>
+        <div class="card" onclick="window.open('https://modrinth.com/mod/lithium','_blank')">
+          <div class="card-icon">🔋</div>
+          <h3>Lithium</h3>
+          <p>Server & game logic optimizer. Reduces lag spikes.</p>
+        </div>
+        <div class="card" onclick="window.open('https://modrinth.com/mod/iris','_blank')">
+          <div class="card-icon">🌈</div>
+          <h3>Iris Shaders</h3>
+          <p>Shader mod compatible with Sodium. Beautiful graphics.</p>
+        </div>
+        <div class="card" onclick="window.open('https://modrinth.com/mod/modmenu','_blank')">
+          <div class="card-icon">📋</div>
+          <h3>Mod Menu</h3>
+          <p>In-game mod manager UI. See & configure all installed Fabric mods.</p>
+        </div>
+        <div class="card" onclick="window.open('https://modrinth.com/mod/starlight','_blank')">
+          <div class="card-icon">✨</div>
+          <h3>Starlight</h3>
+          <p>Rewrites light engine for massive chunk loading speed improvements.</p>
+        </div>
+        <div class="card" onclick="window.open('https://modrinth.com/mod/fabric-api','_blank')">
+          <div class="card-icon">🧩</div>
+          <h3>Fabric API</h3>
+          <p>Required library for most Fabric mods. Install this first!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== BOOKMARKS ==================== -->
+  <div class="section" id="sec-bookmarks">
+    <div class="section-title">Custom Bookmarks</div>
+    <p style="color:var(--text2);margin-bottom:20px;font-size:14px;">Save your favorite gaming sites, tools & resources. Stored in your browser.</p>
+
+    <div class="add-bookmark">
+      <input type="text" id="bmName" placeholder="Bookmark name (e.g. My Server)" />
+      <input type="text" id="bmUrl" placeholder="URL (e.g. https://example.com)" />
+      <button class="btn btn-primary" onclick="addBookmark()">+ Add</button>
+    </div>
+
+    <div class="bookmark-bar" id="bookmarkBar"></div>
+
+    <div class="section-title" style="margin-top:30px;">Quick Links</div>
+    <div class="cards" id="bookmarkCards"></div>
+  </div>
+
+  <!-- ==================== CROSSHAIR ==================== -->
+  <div class="section" id="sec-crosshair">
+    <div class="section-title">Custom Crosshair Overlay</div>
+    <p style="color:var(--text2);margin-bottom:20px;font-size:14px;">
+      Choose a crosshair style. It stays on screen as an overlay while you play browser games.
+    </p>
+
+    <div style="display:flex;gap:30px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:300px;">
+        <h3 style="font-size:15px;margin-bottom:14px;">Select Style</h3>
+        <div class="crosshair-grid">
+          <div class="crosshair-option selected" onclick="selectCrosshair('cross')" id="ch-cross">
+            <div class="crosshair-preview"><canvas id="prev-cross" width="60" height="60"></canvas></div>
+            <label>Classic Cross</label>
+          </div>
+          <div class="crosshair-option" onclick="selectCrosshair('dot')" id="ch-dot">
+            <div class="crosshair-preview"><canvas id="prev-dot" width="60" height="60"></canvas></div>
+            <label>Center Dot</label>
+          </div>
+          <div class="crosshair-option" onclick="selectCrosshair('circle')" id="ch-circle">
+            <div class="crosshair-preview"><canvas id="prev-circle" width="60" height="60"></canvas></div>
+            <label>Circle</label>
+          </div>
+          <div class="crosshair-option" onclick="selectCrosshair('crossdot')" id="ch-crossdot">
+            <div class="crosshair-preview"><canvas id="prev-crossdot" width="60" height="60"></canvas></div>
+            <label>Cross + Dot</label>
+          </div>
+          <div class="crosshair-option" onclick="selectCrosshair('chevron')" id="ch-chevron">
+            <div class="crosshair-preview"><canvas id="prev-chevron" width="60" height="60"></canvas></div>
+            <label>Chevron</label>
+          </div>
+          <div class="crosshair-option" onclick="selectCrosshair('t-cross')" id="ch-t-cross">
+            <div class="crosshair-preview"><canvas id="prev-t-cross" width="60" height="60"></canvas></div>
+            <label>T-Cross</label>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:0 0 280px;">
+        <h3 style="font-size:15px;margin-bottom:14px;">Customize</h3>
+        <div class="color-row">
+          <label>Color</label>
+          <input type="color" id="chColor" value="#00ff00" onchange="updateCrosshair()">
+        </div>
+        <div class="color-row">
+          <label>Size</label>
+          <input type="range" id="chSize" min="10" max="80" value="30" onchange="updateCrosshair()">
+        </div>
+        <div class="color-row">
+          <label>Thickness</label>
+          <input type="range" id="chThick" min="1" max="8" value="2" onchange="updateCrosshair()">
+        </div>
+        <div class="color-row">
+          <label>Opacity</label>
+          <input type="range" id="chOpacity" min="20" max="100" value="100" onchange="updateCrosshair()">
+        </div>
+        <div style="margin-top:20px;display:flex;gap:10px;">
+          <button class="btn btn-primary" id="chToggleBtn" onclick="toggleCrosshair()">Enable Overlay</button>
+          <button class="btn btn-secondary" onclick="resetCrosshair()">Reset</button>
+        </div>
+        <p style="font-size:11px;color:var(--text2);margin-top:12px;">
+          Tip: The crosshair overlay stays on top of browser games. Toggle it on/off anytime.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SPLIT SCREEN ==================== -->
+  <div class="section" id="sec-splitscreen">
+    <div class="section-title">Split Screen Browser</div>
+    <p style="color:var(--text2);margin-bottom:15px;font-size:14px;">
+      Load two sites side by side — perfect for playing a game while watching a guide or chatting.
+    </p>
+    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="loadSplit('https://krunker.io/','https://www.youtube.com/')">🔫 Krunker + YouTube</button>
+      <button class="btn btn-secondary" onclick="loadSplit('https://1v1.lol/','https://www.youtube.com/')">🏗️ 1v1.LOL + YouTube</button>
+      <button class="btn btn-secondary" onclick="loadSplit('https://shellshock.io/','https://discord.com/app')">🥚 ShellShock + Discord</button>
+      <button class="btn btn-secondary" onclick="clearSplit()">Clear Both</button>
+    </div>
+    <div class="split-container" id="splitContainer">
+      <div class="split-pane">
+        <div class="pane-header">
+          <span>Left Pane</span>
+        </div>
+        <input class="url-input" id="leftUrl" placeholder="Enter URL and press Enter..." onkeydown="if(event.key==='Enter')loadPane('left')">
+        <div class="pane-content" id="leftContent">
+          <span style="font-size:30px;">🎮</span>
+          <span>Enter a URL above or use a preset</span>
+        </div>
+      </div>
+      <div class="split-pane">
+        <div class="pane-header">
+          <span>Right Pane</span>
+        </div>
+        <input class="url-input" id="rightUrl" placeholder="Enter URL and press Enter..." onkeydown="if(event.key==='Enter')loadPane('right')">
+        <div class="pane-content" id="rightContent">
+          <span style="font-size:30px;">📺</span>
+          <span>Enter a URL above or use a preset</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== OFFLINE MODE ==================== -->
+  <div class="section" id="sec-offline">
+    <div class="section-title">Offline Mode</div>
+    <p style="color:var(--text2);margin-bottom:25px;font-size:14px;">
+      Disconnect from the internet to play offline games. Your browsing won't be visible on the network.
+    </p>
+
+    <div style="background:var(--surface);border:1px solid #333;border-radius:16px;padding:25px;margin-bottom:25px;">
+      <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
+        <div style="font-size:40px;" id="offlineIcon">🟢</div>
+        <div>
+          <h3 id="offlineStatus" style="font-size:18px;">You are Online</h3>
+          <p style="color:var(--text2);font-size:13px;" id="offlineDesc">Click the button below to switch to offline mode.</p>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="offlineBigBtn" onclick="toggleOffline()" style="width:100%;padding:14px;font-size:15px;">
+        🔌 Go Offline
+      </button>
+      <p style="font-size:11px;color:var(--text2);margin-top:12px;text-align:center;">
+        This uses your browser's offline mode. Offline-capable games below will still work!
+      </p>
+    </div>
+
+    <div class="section-title">Offline Games (No Internet Needed)</div>
+    <div class="cards">
+      <div class="card" onclick="window.open('https://chromedino.com/','_blank')">
+        <div class="card-icon">🦕</div>
+        <span class="badge badge-free">Offline</span>
+        <h3>Chrome Dino Game</h3>
+        <p>The classic T-Rex runner. Works completely offline!</p>
+      </div>
+      <div class="card" onclick="window.open('https://play2048.co/','_blank')">
+        <div class="card-icon">🔢</div>
+        <span class="badge badge-free">Offline</span>
+        <h3>2048</h3>
+        <p>Addictive number puzzle game. Load once, play forever.</p>
+      </div>
+      <div class="card" onclick="openSnake()">
+        <div class="card-icon">🐍</div>
+        <span class="badge badge-free">Built-in</span>
+        <h3>Snake Game</h3>
+        <p>Classic Snake built right into UB-Paradice. No internet needed.</p>
+      </div>
+      <div class="card" onclick="window.open('https://www.nealfun.com/','_blank')">
+        <div class="card-icon">🎯</div>
+        <span class="badge badge-free">Offline</span>
+        <h3>Neal.fun Games</h3>
+        <p>Collection of fun interactive experiences and mini-games.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div><span class="status-dot status-online" id="statusDot"></span> <span id="statusText">Connected</span></div>
+  <div>UB-Paradice v2.0</div>
+  <div id="clockDisplay"></div>
+</div>
+
+<!-- SNAKE GAME MODAL -->
+<div class="modal-overlay" id="snakeModal">
+  <div class="modal" style="max-width:420px;text-align:center;">
+    <h2>🐍 Snake</h2>
+    <canvas id="snakeCanvas" width="380" height="380" style="background:#111;border-radius:8px;border:1px solid #333;margin-bottom:10px;"></canvas>
+    <p>Use Arrow Keys or WASD to move</p>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">
+      <button class="btn btn-primary" onclick="startSnake()">New Game</button>
+      <button class="btn btn-danger" onclick="closeSnake()">Close</button>
+    </div>
+    <p style="margin-top:8px;font-size:16px;font-weight:700;color:var(--accent);">Score: <span id="snakeScore">0</span></p>
+  </div>
+</div>
+
+<script>
+// ===== NAVIGATION =====
+function switchSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ===== OFFLINE MODE =====
+let isOffline = false;
+function toggleOffline() {
+  isOffline = !isOffline;
+  const toggle = document.getElementById('offlineToggle');
+  const label = document.getElementById('offlineLabel');
+  const icon = document.getElementById('offlineIcon');
+  const status = document.getElementById('offlineStatus');
+  const desc = document.getElementById('offlineDesc');
+  const btn = document.getElementById('offlineBigBtn');
+  const dot = document.getElementById('statusDot');
+  const stxt = document.getElementById('statusText');
+
+  if (isOffline) {
+    toggle.classList.add('offline');
+    label.textContent = 'Offline';
+    if(icon) icon.textContent = '🔴';
+    if(status) status.textContent = 'You are Offline';
+    if(desc) desc.textContent = 'Your network connection has been paused. Play offline games below!';
+    if(btn) btn.textContent = '🌐 Go Online';
+    dot.className = 'status-dot status-offline';
+    stxt.textContent = 'Disconnected';
+    // Attempt to actually go offline (works in some browsers)
+    if ('serviceWorker' in navigator) {
+      // Signal offline to the page
+    }
+  } else {
+    toggle.classList.remove('offline');
+    label.textContent = 'Online';
+    if(icon) icon.textContent = '🟢';
+    if(status) status.textContent = 'You are Online';
+    if(desc) desc.textContent = 'Click the button below to switch to offline mode.';
+    if(btn) btn.textContent = '🔌 Go Offline';
+    dot.className = 'status-dot status-online';
+    stxt.textContent = 'Connected';
+  }
+}
+
+// ===== BOOKMARKS =====
+let bookmarks = JSON.parse(localStorage.getItem('ubp_bookmarks') || '[]');
+function renderBookmarks() {
+  const bar = document.getElementById('bookmarkBar');
+  const cards = document.getElementById('bookmarkCards');
+  bar.innerHTML = '';
+  cards.innerHTML = '';
+  if (bookmarks.length === 0) {
+    cards.innerHTML = '<div style="color:var(--text2);font-size:14px;grid-column:1/-1;">No bookmarks yet. Add one above!</div>';
+  }
+  bookmarks.forEach((bm, i) => {
+    bar.innerHTML += '<div class="bookmark-chip" onclick="window.open(\'' + bm.url + '\',\'_blank\')">' +
+      '🔗 ' + bm.name + '<span class="del" onclick="event.stopPropagation();removeBookmark(' + i + ')">✕</span></div>';
+    cards.innerHTML += '<div class="card" onclick="window.open(\'' + bm.url + '\',\'_blank\')">' +
+      '<div class="card-icon">🔖</div><h3>' + bm.name + '</h3><p style="word-break:break-all;">' + bm.url + '</p></div>';
+  });
+}
+function addBookmark() {
+  const name = document.getElementById('bmName').value.trim();
+  let url = document.getElementById('bmUrl').value.trim();
+  if (!name || !url) return;
+  if (!url.startsWith('http')) url = 'https://' + url;
+  bookmarks.push({ name, url });
+  localStorage.setItem('ubp_bookmarks', JSON.stringify(bookmarks));
+  document.getElementById('bmName').value = '';
+  document.getElementById('bmUrl').value = '';
+  renderBookmarks();
+}
+function removeBookmark(i) {
+  bookmarks.splice(i, 1);
+  localStorage.setItem('ubp_bookmarks', JSON.stringify(bookmarks));
+  renderBookmarks();
+}
+renderBookmarks();
+</script>
+
+<script>
+// ===== NAVIGATION =====
+function switchSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ===== OFFLINE MODE =====
+let isOffline = false;
+function toggleOffline() {
+  isOffline = !isOffline;
+  const toggle = document.getElementById('offlineToggle');
+  const label = document.getElementById('offlineLabel');
+  const icon = document.getElementById('offlineIcon');
+  const status = document.getElementById('offlineStatus');
+  const desc = document.getElementById('offlineDesc');
+  const btn = document.getElementById('offlineBigBtn');
+  const dot = document.getElementById('statusDot');
+  const stxt = document.getElementById('statusText');
+
+  if (isOffline) {
+    toggle.classList.add('offline');
+    label.textContent = 'Offline';
+    if(icon) icon.textContent = '\u{1F534}';
+    if(status) status.textContent = 'You are Offline';
+    if(desc) desc.textContent = 'Your network connection has been paused. Play offline games below!';
+    if(btn) btn.innerHTML = '&#x1F310; Go Online';
+    dot.className = 'status-dot status-offline';
+    stxt.textContent = 'Disconnected';
+  } else {
+    toggle.classList.remove('offline');
+    label.textContent = 'Online';
+    if(icon) icon.textContent = '\u{1F7E2}';
+    if(status) status.textContent = 'You are Online';
+    if(desc) desc.textContent = 'Click the button below to switch to offline mode.';
+    if(btn) btn.innerHTML = '&#x1F50C; Go Offline';
+    dot.className = 'status-dot status-online';
+    stxt.textContent = 'Connected';
+  }
+}
+</script>
+<script>
+function switchSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+let isOffline = false;
+function toggleOffline() {
+  isOffline = !isOffline;
+  const toggle = document.getElementById('offlineToggle');
+  const label = document.getElementById('offlineLabel');
+  const icon = document.getElementById('offlineIcon');
+  const status = document.getElementById('offlineStatus');
+  const desc = document.getElementById('offlineDesc');
+  const btn = document.getElementById('offlineBigBtn');
+  const dot = document.getElementById('statusDot');
+  const stxt = document.getElementById('statusText');
+  if (isOffline) {
+    toggle.classList.add('offline');
+    label.textContent = 'Offline';
+    if(status) status.textContent = 'You are Offline';
+    if(desc) desc.textContent = 'Network paused. Play offline games!';
+    if(btn) btn.textContent = 'Go Online';
+    dot.className = 'status-dot status-offline';
+    stxt.textContent = 'Disconnected';
+  } else {
+    toggle.classList.remove('offline');
+    label.textContent = 'Online';
+    if(status) status.textContent = 'You are Online';
+    if(desc) desc.textContent = 'Click below to go offline.';
+    if(btn) btn.textContent = 'Go Offline';
+    dot.className = 'status-dot status-online';
+    stxt.textContent = 'Connected';
+  }
+}
+</script>
+<script>
+let bookmarks = JSON.parse(localStorage.getItem('ubp_bookmarks') || '[]');
+function renderBookmarks() {
+  const bar = document.getElementById('bookmarkBar');
+  const cards = document.getElementById('bookmarkCards');
+  bar.innerHTML = '';
+  cards.innerHTML = '';
+  if (bookmarks.length === 0) {
+    cards.innerHTML = '<div style="color:#888;font-size:14px;grid-column:1/-1;">No bookmarks yet. Add one above!</div>';
+  }
+  bookmarks.forEach(function(bm, i) {
+    const chip = document.createElement('div');
+    chip.className = 'bookmark-chip';
+    chip.innerHTML = bm.name + ' <span class="del">x</span>';
+    chip.onclick = function() { window.open(bm.url, '_blank'); };
+    chip.querySelector('.del').onclick = function(e) { e.stopPropagation(); removeBookmark(i); };
+    bar.appendChild(chip);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = '<div class="card-icon">&#x1F516;</div><h3>' + bm.name + '</h3><p style="word-break:break-all;">' + bm.url + '</p>';
+    card.onclick = function() { window.open(bm.url, '_blank'); };
+    cards.appendChild(card);
+  });
+}
+function addBookmark() {
+  const name = document.getElementById('bmName').value.trim();
+  let url = document.getElementById('bmUrl').value.trim();
+  if (!name || !url) return;
+  if (!url.startsWith('http')) url = 'https://' + url;
+  bookmarks.push({ name: name, url: url });
+  localStorage.setItem('ubp_bookmarks', JSON.stringify(bookmarks));
+  document.getElementById('bmName').value = '';
+  document.getElementById('bmUrl').value = '';
+  renderBookmarks();
+}
+function removeBookmark(i) {
+  bookmarks.splice(i, 1);
+  localStorage.setItem('ubp_bookmarks', JSON.stringify(bookmarks));
+  renderBookmarks();
+}
+renderBookmarks();
+<\/script>
